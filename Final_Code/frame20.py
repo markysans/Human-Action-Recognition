@@ -91,24 +91,24 @@ for filename in sorted(os.listdir(path)):
                 resized_img = cv2.resize(crop_img, (64, 128))
                 output_frame = cv2.cvtColor(resized_img, cv2.COLOR_GRAY2RGB).copy()
                 img_array.append(output_frame)
-                # cv2.imshow('bgframe', output_frame)
+                cv2.imshow('bgframe', output_frame)
 
         mean_frame1 = min(mean_frame1, mean)
-        # cv2.imshow('Original', frame)
+        cv2.imshow('Original', frame)
 
         success, frame = cap.read()
 
-        k = cv2.waitKey(0) & 0xff
+        k = cv2.waitKey(30) & 0xff
         if k == ord('q') or k == 27:
             break
-    if len(img_array) >= 20:
-        print(len(img_array))
-        gap = len(img_array)/20
-        out = cv2.VideoWriter('/home/arijitiiest/Desktop/Workspace/Project/Human Action Recognition/MyWork/NewData/jogging/'+filename, 0, 25, (64, 128))
-        for i in range(0, len(img_array), int(gap)):
-            out.write(img_array[i])
-    else:
-        print(filename)
+    # if len(img_array) >= 20:
+    #     print(len(img_array))
+    #     gap = len(img_array)/20
+    #     out = cv2.VideoWriter('/home/arijitiiest/Desktop/Workspace/Project/Human Action Recognition/MyWork/NewData/jogging/'+filename, 0, 25, (64, 128))
+    #     for i in range(0, len(img_array), int(gap)):
+    #         out.write(img_array[i])
+    # else:
+    #     print(filename)
 
     cap.release()
     cv2.destroyAllWindows()

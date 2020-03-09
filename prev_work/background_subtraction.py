@@ -2,7 +2,7 @@ import cv2
 import os
 import numpy as np
 
-path = '/dataset/running'
+path = '/home/arijitiiest/Desktop/Workspace/Project/Human Action Recognition/dataset/running'
 for filename in sorted(os.listdir(path)):
     file_path = path + '/' + filename
     first_frame = None
@@ -24,11 +24,11 @@ for filename in sorted(os.listdir(path)):
         cont_image = cv2.bitwise_not(thresh_delta.copy())
         (cnts, _) = cv2.findContours(cont_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # for contour in cnts:
-        #     if cv2.contourArea(contour) < 400:
-        #         continue
-        #     (x, y, w, h) = cv2.boundingRect(contour)
-        #     cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
+        for contour in cnts:
+            if cv2.contourArea(contour) < 400:
+                continue
+            (x, y, w, h) = cv2.boundingRect(contour)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 1)
         crop_img = np.zeros((60, 120))
 
         if len(cnts) != 0:
