@@ -2,18 +2,20 @@ import cv2
 import os
 import numpy as np
 import pandas as pd
-from sparse_filtering import SparseFiltering
-from skimage import feature
 from skimage.feature import local_binary_pattern
+from scipy.stats import itemfreq
+from sklearn.preprocessing import normalize
+from sparse_filtering import SparseFiltering
 
-
-path = '/home/arijitiiest/Desktop/Workspace/Project/Human Action Recognition/MyWork/NewData/walking'
+path = '/home/dolan/PycharmProjects/HAR/after_bremoval/Boxing'
 for filename in sorted(os.listdir(path)):
     file_path = path + '/' + filename
     cap = cv2.VideoCapture(file_path)
 
     first_frame = None
-    d = np.zeros((0, 882))
+    d = np.zeros((0, 26))
+
+    X_test = []
 
     while True:
         ret, frame = cap.read()
@@ -21,41 +23,52 @@ for filename in sorted(os.listdir(path)):
             # cv2.imshow('Original', frame)
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            # Local Binary Pattern
-            frame = cv2.resize(frame, (42, 21))  # reshaping from (128, 64) -> (42, 21)
-            radius = 2
-            n_points = 8 * radius
-            lbp = local_binary_pattern(frame, n_points, radius, 'uniform')
+            #local_binary_pattern
 
-            # print(lbp.shape)   # frame size
-            f = lbp.reshape((1, lbp.shape[0]*lbp.shape[1]))
-            # print(f.shape)
-            d = np.concatenate((d, f), axis=0)
+            radius = 3 #no of points to be considered as neighbours
+            no_points = 8 * radius
+            lbp = local_binary_pattern(frame, no_points, radius, method='uniform')
+            cv2.imshow('Local Binary Image', lbp)
 
-            # cv2.imshow('frame', cv2.resize(lbp, (60 * 5, 120 * 5)))
+
+            #calculate the histogram
+            (x, _) = np.histogram(lbp.ravel(), bins=np.arange(0, no_points + 3),
+                                     range=(0, no_points + 2))
+            # print(x)
+            # print(x.shape) (26, )
+
+            #normalize the histogram
+
+            x = [x]
+            x = np.array(x)
+            print(x.shape)
+            x = x.astype("float")
+            x /= (x.sum() + 1e-7)
+            # print(x)
+            # np.reshape(x,(1,26))
+            # # print(f.shape)
+            d = np.concatenate([d, x], axis=0)
+            print(d.shape)
+            # # print(f.shape, d.shape)  # size is (1, 756), (n, 756)
+            #
+            # # cv2.imshow('frame', cv2.resize(frame, (60 * 5, 120 * 5)))
         else:
             break
 
-        k = cv2.waitKey(0) & 0xff
+        k = cv2.waitKey(100) & 0xff
         if k == ord('q') or k == 27:
             break
 
     # first 20 frames feature
     d = d[0:20, :]
+    features = d.reshape(1, 520)
+    print(features.shape)
 
-    # # Sparse Filtering
-    # # n_features = 50   # How many features are learned
-    # # estimator = SparseFiltering(n_features=n_features,
-    # #                             maxfun=100,  # The maximal number of evaluations of the objective function
-    # #                             iprint=100)  # after how many function evaluations is information printed
-    # #
-    # # features = estimator.fit_transform(d)  # by L-BFGS. -1 for no information
-    # features = d.reshape((1, d.shape[0]*d.shape[1]))
-    # features = np.append(features, [['F']], axis=1)
+    features = np.append(features, [['F']], axis=1)
     #
-    # data = pd.DataFrame(features)
-    # data.to_csv('/home/arijitiiest/Desktop/Workspace/Project/Human Action Recognition/MyWork/KTH/lbp.csv', mode='a',
-    #             index=False, header=False)
+    data = pd.DataFrame(features)
+    data.to_csv('/home/dolan/PycharmProjects/HAR/features/test.csv', mode='a',
+                index=False, header=False)
     #
     # print(d.shape)
     # print(estimator.w_.shape)
